@@ -1,0 +1,90 @@
+<!-- chatroom.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat</title>
+    <style>
+        .sent-message {
+            text-align: right;
+            background-color: #e6f7ff;
+            padding: 5px;
+            margin-top: 5px;
+        }
+
+        .received-message {
+            text-align: left;
+            background-color: #f2f2f2;
+            padding: 5px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Group Chat</h1>
+        <div id="chat-messages"></div>
+        <div class="message-form">
+            <input type="text" id="message" placeholder="Type your message">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- Add Socket.IO script -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        const socket = io();
+        let username;
+
+        // Function to send message
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (message.trim() === '') {
+                alert('Please enter a message.');
+                return;
+            }
+
+            // Emit 'sendMessage' event to the server along with the username
+            socket.emit('sendMessage', { message: message, username: username });
+
+            // Clear input field after sending message
+            document.getElementById('message').value = '';
+        }
+
+        // Listen for 'receiveMessage' event
+        socket.on('receiveMessage', (data) => {
+            displayMessage(data.username, data.message);
+        });
+
+        // Function to display message in the chat window
+        function displayMessage(username, message) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            const messageContent = `<div><strong>${username}:</strong> ${message}</div>`;
+            
+            if (username === username) {
+                messageDiv.classList.add('sent-message');
+            } else {
+                messageDiv.classList.add('received-message');
+            }
+
+            messageDiv.innerHTML = messageContent;
+            chatMessages.appendChild(messageDiv);
+        }
+
+        // Function to prompt for username
+        function promptForUsername() {
+            username = prompt('Please enter your username:');
+            if (!username) {
+                alert('You must enter a username to join the chat.');
+                promptForUsername();
+            }
+        }
+
+        // Call promptForUsername function when the page loads
+        promptForUsername();
+    </script>
+</body>
+</html>

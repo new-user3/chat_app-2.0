@@ -1,0 +1,78 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Room Authentication</title>
+</head>
+<body>
+<div class="container">
+    <h2>Chat Room Authentication</h2>
+    <form id="loginForm">
+        <label for="chatroomId">Chat Room ID:</label>
+        <input type="text" id="chatroomId" name="chatroomId" required><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <input type="submit" value="Login">
+    </form>
+    <p id="message"></p>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    // Function to handle form submission
+    async function handleSubmit(event) {
+        event.preventDefault();
+
+        const formData = new FormData(loginForm);
+        const chatroomId = formData.get('chatroomId');
+        const password = formData.get('password');
+
+        try {
+            const response = await fetch('/authenticate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ chatroomId, password })
+            });
+
+            const data = await response.json();
+            handleAuthenticationResponse(data);
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage('An error occurred. Please try again later.');
+        }
+    }
+
+    // Function to handle authentication response
+    function handleAuthenticationResponse(data) {
+        const message = document.getElementById('message');
+        if (data.success) {
+            message.textContent = data.message;
+            redirectToChatRoom();
+        } else {
+            showMessage(data.message);
+        }
+    }
+
+    // Function to redirect to the chat room page
+    function redirectToChatRoom() {
+        window.location.href = '/chatroom.html'; // Change 'chatroom.html' to the actual file name of your chat room page
+    }
+
+    // Function to display message
+    function showMessage(msg) {
+        const message = document.getElementById('message');
+        message.textContent = msg;
+    }
+
+    // Add event listener for form submission
+    const loginForm = document.getElementById('loginForm');
+    loginForm.addEventListener('submit', handleSubmit);
+</script>
+
+</body>
+</html>
